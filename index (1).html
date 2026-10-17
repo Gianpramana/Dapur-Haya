@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dapur Haya</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;600;800&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<style>
+html { color-scheme: light; }
+body { margin: 0; }
+/* Layout: sticky bar, hero with order facts, searchable catalog, side cart drawer, then a research block (modul belajar, tes, SUS, rekap). */
+:root {
+  --bg: #F6F3F7;
+  --surface: #FFFFFF;
+  --fg: #231B2A;
+  --muted: #6A5F72;
+  --line: #E1D9E6;
+  --accent: #8E2A5E;
+  --accent-fg: #FFFFFF;
+  --spot: #C5E08A;
+  --spot-fg: #1D2A08;
+  --good: #2E7D4F;
+  --warn: #A66300;
+  --bad: #B3261E;
+  --tile-s: 40%;
+  --tile-l: 89%;
+  --tile-fg: #231B2A;
+  --font-display: "Gabarito", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171219; --surface: #211A24; --fg: #F0E9F2; --muted: #A99DB0; --line: #342A38;
+    --accent: #E58BB8; --accent-fg: #2A0F1D; --spot: #C5E08A; --spot-fg: #1D2A08;
+    --good: #7BD39B; --warn: #E8B15A; --bad: #FF8A80;
+    --tile-s: 22%; --tile-l: 22%; --tile-fg: #F0E9F2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171219; --surface: #211A24; --fg: #F0E9F2; --muted: #A99DB0; --line: #342A38;
+  --accent: #E58BB8; --accent-fg: #2A0F1D; --spot: #C5E08A; --spot-fg: #1D2A08;
+  --good: #7BD39B; --warn: #E8B15A; --bad: #FF8A80;
+  --tile-s: 22%; --tile-l: 22%; --tile-fg: #F0E9F2;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1080px; margin-inline: auto; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 10; }
+header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--bg); border-bottom: 1px solid var(--line);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding-inline: max(16px, env(safe-area-inset-left, 0px));
+}
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; text-decoration: none; color: var(--fg); display: inline-flex; align-items: center; gap: 8px; }
+.brand i { width: 14px; height: 14px; border-radius: 50% 50% 50% 0; background: var(--accent); display: inline-block; transform: rotate(-45deg); }
+nav { display: flex; gap: 20px; }
+nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: .95rem; }
+nav a:hover { color: var(--fg); }
+@media (max-width: 640px) { nav { display: none; } }
+.cart-btn { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 600; }
+.cart-btn .count { background: var(--spot); color: var(--spot-fg); border-radius: 999px; min-width: 22px; height: 22px; display: grid; place-items: center; font-size: .8rem; padding-inline: 6px; }
+
+.hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; padding-block: 48px 36px; align-items: end; }
+.hero h1 { font-size: clamp(2.4rem, 7.5vw, 4.4rem); font-weight: 800; letter-spacing: -0.02em; }
+.hero h1 span { color: var(--accent); }
+.hero .lead { margin-top: 16px; color: var(--muted); font-size: 1.08rem; max-width: 46ch; }
+.cta { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-block; text-decoration: none; cursor: pointer; border: 1.5px solid var(--fg); background: transparent; color: var(--fg); border-radius: 10px; padding: 11px 20px; font-weight: 600; text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.small { padding: 7px 14px; font-size: .9rem; }
+.facts { margin: 0; padding: 0; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.facts li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.facts li:last-child { border-bottom: 0; }
+.facts span { color: var(--muted); }
+.facts b { font-family: var(--font-display); font-weight: 600; text-align: right; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-top: 32px; } }
+
+section { padding-block: 32px; scroll-margin-top: 72px; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.sec-head h2 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+.sec-head p { color: var(--muted); max-width: 56ch; margin-top: 6px; }
+
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-weight: 500; font-size: .92rem; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+input[type="text"], input[type="search"], input[type="date"], input[type="number"], textarea, select {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+#cari { max-width: 260px; }
+textarea { resize: vertical; min-height: 64px; }
+label.f { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 4px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.tile { aspect-ratio: 4 / 3; max-width: 100%; position: relative; display: grid; place-items: center; color: var(--tile-fg);
+  background: radial-gradient(circle at 20% 20%, hsl(var(--h) var(--tile-s) calc(var(--tile-l) - 7%)) 0 2px, transparent 3px) 0 0 / 22px 22px, hsl(var(--h) var(--tile-s) var(--tile-l)); }
+.tile .letter { font-family: var(--font-display); font-weight: 800; font-size: 5.5rem; line-height: 1; }
+.tile .unit { position: absolute; left: 12px; bottom: 10px; font-weight: 600; font-size: .85rem; background: var(--surface); color: var(--fg); border-radius: 6px; padding: 2px 9px; }
+.tile .tag { position: absolute; right: 12px; top: 10px; font-size: .78rem; font-weight: 600; background: var(--spot); color: var(--spot-fg); border-radius: 6px; padding: 2px 9px; }
+.info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.info h3 { font-size: 1.15rem; font-weight: 600; }
+.info p { color: var(--muted); font-size: .92rem; flex: 1; }
+.buy { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; }
+.price { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
+.add { cursor: pointer; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 600; }
+.none { color: var(--muted); border: 1.5px dashed var(--line); border-radius: 12px; padding: 24px; text-align: center; grid-column: 1 / -1; }
+
+.faq { display: grid; gap: 8px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; }
+summary { cursor: pointer; font-weight: 600; padding: 14px 0; list-style-position: outside; }
+details[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+details > :not(summary) { padding-bottom: 16px; }
+details p + p, details ul { margin-top: 8px; }
+details ul { padding-left: 20px; }
+.contact { margin-top: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-wrap: wrap; gap: 16px 40px; justify-content: space-between; align-items: center; }
+.contact dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; min-width: 0; }
+.contact dt { color: var(--muted); }
+.contact dd { margin: 0; overflow-wrap: anywhere; }
+
+/* research block */
+.lab { margin-top: 24px; border-top: 3px solid var(--fg); }
+.lab-tag { display: inline-block; margin-top: 18px; font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; background: var(--spot); color: var(--spot-fg); padding: 3px 10px; border-radius: 6px; }
+.progress { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.meter { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--good); width: 0; transition: width .3s; }
+.mod-done { display: inline-block; margin-top: 8px; }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 12px; }
+.calc-out { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.out { background: var(--bg); border-radius: 10px; padding: 12px 14px; }
+.out small { color: var(--muted); display: block; }
+.out b { font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.ident { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.q { padding: 14px 0; border-top: 1px solid var(--line); }
+.q p { font-weight: 600; margin-bottom: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; cursor: pointer; }
+.opt input { margin-top: 5px; accent-color: var(--accent); }
+.scale { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.scale label { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-weight: 600; background: var(--bg); }
+.scale input { position: absolute; opacity: 0; pointer-events: none; }
+.scale input:checked + span { background: var(--accent); color: var(--accent-fg); }
+.scale label:has(input:checked) { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.scale label:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ends { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-top: 4px; max-width: 320px; }
+.msg { min-height: 1.4em; margin-top: 10px; font-size: .92rem; color: var(--bad); }
+.result { margin-top: 18px; border: 2px solid var(--good); border-radius: 14px; padding: 18px; background: var(--surface); }
+.result .big { font-family: var(--font-display); font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.code { font-family: var(--font-mono); font-size: .8rem; word-break: break-all; background: var(--bg); border-radius: 8px; padding: 10px; margin-top: 10px; max-height: 96px; overflow-y: auto; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.stat small { color: var(--muted); display: block; }
+.stat b { font-family: var(--font-display); font-size: 1.9rem; font-weight: 800; display: block; line-height: 1.15; }
+.pill { display: inline-block; font-size: .8rem; font-weight: 600; border-radius: 999px; padding: 2px 10px; border: 1px solid currentColor; }
+.pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: .92rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { background: var(--bg); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+.row-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+footer { color: var(--muted); font-size: .88rem; padding-top: 24px; }
+
+/* cart */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 20; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; width: min(430px, 100%); background: var(--bg); border-left: 1px solid var(--line); display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--line); }
+.drawer-head h2 { font-size: 1.4rem; }
+.x { cursor: pointer; background: transparent; border: 1px solid var(--line); border-radius: 8px; width: 38px; height: 38px; font-size: 1.2rem; }
+.drawer-body { overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.empty { color: var(--muted); border: 1.5px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; }
+.line { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.line b { font-family: var(--font-display); font-weight: 600; }
+.line small { color: var(--muted); }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.qty button { cursor: pointer; background: transparent; border: 0; width: 32px; height: 32px; font-size: 1.1rem; }
+.qty span { min-width: 26px; text-align: center; font-weight: 600; }
+.total { display: flex; justify-content: space-between; font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; }
+.form { display: grid; gap: 12px; }
+.seg { display: flex; gap: 8px; }
+.seg label { flex: 1; text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 9px; cursor: pointer; background: var(--surface); font-weight: 500; }
+.seg label:has(input:checked) { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.preview { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: .85rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); max-height: 150px; overflow-y: auto; }
+.drawer-foot { padding: 16px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.wa { background: #1FA855; color: #fff; border-color: #1FA855; }
+.wa[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.hint { color: var(--muted); font-size: .85rem; min-height: 1.3em; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s; } .card:hover { transform: translateY(-2px); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#atas"><i aria-hidden="true"></i>Dapur Haya</a>
+    <nav aria-label="Menu utama">
+      <a href="#produk">Produk</a>
+      <a href="#info">Info</a>
+      <a href="#belajar">Belajar</a>
+      <a href="#uji">Tes</a>
+      <a href="#rekap">Rekap</a>
+    </nav>
+    <button class="cart-btn" id="openCart" type="button" aria-label="Buka keranjang">Keranjang <span class="count num" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main class="wrap" id="atas">
+  <div class="hero">
+    <div>
+      <h1>Rasa rumah, dibuat <span>sesuai pesanan.</span></h1>
+      <p class="lead" id="tagline"></p>
+      <div class="cta">
+        <a class="btn primary" href="#produk">Pesan sekarang</a>
+        <a class="btn" href="#info">Cara pesan</a>
+      </div>
+    </div>
+    <ul class="facts" id="facts"></ul>
+  </div>
+
+  <section id="produk">
+    <div class="sec-head"><h2>Menu Dapur Haya</h2></div>
+    <div class="tools">
+      <input type="search" id="cari" placeholder="Cari menu" aria-label="Cari menu">
+      <div class="chips" id="chips" role="group" aria-label="Filter kategori"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="info">
+    <div class="sec-head"><h2>Info pemesanan</h2></div>
+    <div class="faq" id="faq"></div>
+    <div class="contact">
+      <dl id="contactList"></dl>
+      <a class="btn primary" id="waDirect" href="#" target="_blank" rel="noopener">Chat WhatsApp</a>
+    </div>
+  </section>
+
+  <div class="lab">
+    <span class="lab-tag">Bagian penelitian</span>
+
+    <section id="belajar">
+      <div class="sec-head">
+        <div>
+          <h2>Modul Go Digital untuk UMKM</h2>
+          <p>Empat modul singkat tentang berjualan online. Baca modulnya, lalu kerjakan tes di bawah.</p>
+        </div>
+      </div>
+      <div class="progress"><div class="meter"><i id="meterBar"></i></div><span class="num" id="meterTxt">0 dari 4 modul</span></div>
+      <div class="faq" id="modules"></div>
+    </section>
+
+    <section id="uji">
+      <div class="sec-head">
+        <div>
+          <h2>Tes dan kuesioner</h2>
+          <p>Pre-test sebelum membaca modul, post-test sesudahnya. Kuesioner SUS menilai kemudahan penggunaan website ini.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ident">
+          <div><label class="f" for="rNama">Nama atau kode responden</label><input type="text" id="rNama" autocomplete="off" placeholder="Contoh: R01 atau Siti"></div>
+          <div><label class="f" for="rPeran">Peran</label>
+            <select id="rPeran"><option>Pelaku UMKM</option><option>Pelanggan</option><option>Mahasiswa</option><option>Siswa</option><option>Lainnya</option></select></div>
+        </div>
+        <div class="tabs" id="tabs" role="group" aria-label="Jenis instrumen"></div>
+        <form id="testForm" novalidate>
+          <div id="testBody"></div>
+          <p class="msg" id="testMsg" role="alert"></p>
+          <button class="btn primary" type="submit">Kirim jawaban</button>
+        </form>
+        <div class="result" id="result" hidden></div>
+      </div>
+    </section>
+
+    <section id="rekap">
+      <div class="sec-head">
+        <div>
+          <h2>Rekap hasil</h2>
+          <p>Untuk peneliti. Menampilkan nilai rata-rata, N-Gain, dan skor SUS dari semua jawaban yang masuk.</p>
+        </div>
+        <span class="pill" id="srcPill"></span>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="row-actions">
+        <button class="btn small" id="dlCsv" type="button">Unduh CSV</button>
+        <button class="btn small" id="copyCsv" type="button">Salin CSV</button>
+        <button class="btn small" id="wipe" type="button">Hapus data di perangkat ini</button>
+      </div>
+      <p class="msg" id="rekapMsg" style="color:var(--muted)"></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Waktu</th><th>Responden</th><th>Peran</th><th>Jenis</th><th>Skor</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <div class="panel" style="margin-top:18px">
+        <label class="f" for="impor">Impor kode hasil dari responden</label>
+        <textarea id="impor" placeholder="Tempel satu atau beberapa kode (diawali DH1.), satu per baris"></textarea>
+        <div class="row-actions"><button class="btn small" id="doImpor" type="button">Impor kode</button></div>
+      </div>
+    </section>
+  </div>
+
+  <footer id="foot"></footer>
+</main>
+
+<div id="drawerRoot" hidden>
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="drawer-head"><h2 id="cartTitle">Keranjang</h2><button class="x" id="closeCart" type="button" aria-label="Tutup keranjang">&times;</button></div>
+    <div class="drawer-body">
+      <div id="lines"></div>
+      <div class="form" id="form">
+        <div><label class="f" for="nama">Nama</label><input type="text" id="nama" autocomplete="name" placeholder="Nama pemesan"></div>
+        <div>
+          <span class="f" style="font-weight:600;font-size:.9rem;display:block;margin-bottom:4px">Cara terima pesanan</span>
+          <div class="seg"><label><input type="radio" name="metode" value="Antar" checked>Diantar</label><label><input type="radio" name="metode" value="Ambil">Ambil sendiri</label></div>
+        </div>
+        <div id="alamatWrap"><label class="f" for="alamat">Alamat pengantaran</label><textarea id="alamat" autocomplete="street-address" placeholder="Jalan, RT/RW, kelurahan, kota"></textarea></div>
+        <div><label class="f" for="tanggal">Tanggal diterima</label><input type="date" id="tanggal"></div>
+        <div><label class="f" for="catatan">Catatan (opsional)</label><input type="text" id="catatan" placeholder="Contoh: kotak hadiah, tanpa kacang"></div>
+        <div><span class="f" style="font-weight:600;font-size:.9rem;display:block;margin-bottom:4px">Pesan yang akan dikirim</span><div class="preview" id="preview"></div></div>
+      </div>
+    </div>
+    <div class="drawer-foot">
+      <div class="total"><span>Total</span><span class="num" id="total">Rp0</span></div>
+      <a class="btn wa" id="waOrder" href="#" target="_blank" rel="noopener" aria-disabled="true">Pesan lewat WhatsApp</a>
+      <button class="btn" id="copyOrder" type="button">Salin pesan</button>
+      <p class="hint" id="hint" role="status"></p>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ============ DATA USAHA: ganti bagian ini saja ============ */
+var USAHA = {
+  nama: "Dapur Haya",
+  tagline: "Kue, lauk, dan nasi box rumahan. Bahan dibeli segar, dimasak setelah pesanan dikonfirmasi.",
+  wa: "6281234567890",           /* contoh: ganti dengan nomor WhatsApp Dapur Haya (format 62, tanpa + atau 0) */
+  minOrder: 25000,
+  fakta: [["Pesan paling lambat", "H-1 pukul 15.00"], ["Jam layanan", "08.00 - 20.00"], ["Minimal order", "Rp25.000"]],
+  kontak: [["WhatsApp", "+62 812-3456-7890"], ["Alamat", "Jl. Contoh No. 5, Kota Anda"], ["Pembayaran", "Transfer bank atau e-wallet"]],
+  faq: [
+    ["Bagaimana cara memesan?", "<p>Pilih menu, tekan Tambah, buka Keranjang, isi nama dan tanggal terima, lalu tekan Pesan lewat WhatsApp. Pesan terisi otomatis dan tinggal dikirim.</p>"],
+    ["Kapan pesanan saya diterima?", "<p>Pesanan dibuat sesuai tanggal yang kamu pilih. Untuk menu kue dan nasi box, pesan paling lambat sehari sebelumnya.</p>"],
+    ["Berapa ongkos kirim dan bagaimana pembayaran?", "<p>Ongkir mengikuti jarak dan dikonfirmasi lewat WhatsApp. Pembayaran lewat transfer bank atau e-wallet setelah total disepakati.</p>"]
+  ]
+};
+var PRODUK = [
+  { id: "brw", nama: "Brownies Kukus Cokelat", kat: "Kue", satuan: "1 loyang", harga: 45000, hue: 18, ket: "Lembut, cokelat pekat, tidak terlalu manis.", tag: "Terlaris" },
+  { id: "nst", nama: "Nastar Selai Nanas", kat: "Kue", satuan: "1 toples", harga: 85000, hue: 42, ket: "Selai nanas buatan sendiri, kulit lumer di mulut." },
+  { id: "pud", nama: "Puding Susu Vla", kat: "Kue", satuan: "6 cup", harga: 36000, hue: 200, ket: "Puding susu dengan vla vanila, disajikan dingin." },
+  { id: "ris", nama: "Risoles Ragout Ayam", kat: "Camilan", satuan: "isi 10", harga: 38000, hue: 30, ket: "Kulit tipis, isi ragout ayam dan sayur, siap goreng.", tag: "Beku" },
+  { id: "lmp", nama: "Lumpia Semarang", kat: "Camilan", satuan: "isi 10", harga: 40000, hue: 78, ket: "Rebung dan ayam, dibungkus kulit lumpia renyah." },
+  { id: "smb", nama: "Sambal Roa", kat: "Lauk", satuan: "1 botol 150 g", harga: 32000, hue: 8, ket: "Pedas gurih, tahan 2 minggu di lemari es." },
+  { id: "nbx", nama: "Nasi Box Ayam Bakar", kat: "Nasi box", satuan: "per box", harga: 28000, hue: 100, ket: "Nasi, ayam bakar bumbu kuning, lalapan, sambal.", tag: "Min. 10 box" },
+  { id: "nb2", nama: "Nasi Box Rendang", kat: "Nasi box", satuan: "per box", harga: 32000, hue: 350, ket: "Rendang sapi, nasi, sayur daun singkong, kerupuk.", tag: "Min. 10 box" }
+];
+var MODUL = [
+  { judul: "1. Foto dan deskripsi produk", isi:
+    "<p>Calon pembeli menilai makanan dari foto dan tulisan sebelum mencicipi. Foto yang baik tidak harus memakai kamera mahal.</p><ul><li>Foto di dekat jendela pada siang hari, hindari lampu kuning dan blitz.</li><li>Pakai latar polos seperti meja kayu atau kain putih.</li><li>Ambil dari atas dan dari samping, satu foto dekat untuk tekstur.</li></ul><p>Deskripsi produk memuat nama, ukuran atau berat, bahan utama, harga, masa tahan, dan cara pesan. Hindari slogan tanpa informasi." },
+  { judul: "2. Menghitung HPP dan harga jual", calc: true, isi:
+    "<p>Harga Pokok Produksi (HPP) adalah total biaya membuat satu produk: bahan, tenaga kerja, kemasan, dan biaya lain seperti gas.</p><p>HPP per buah = total biaya dibagi jumlah produk jadi. Harga jual = HPP ditambah margin keuntungan. Coba hitung dengan kalkulator di bawah." },
+  { judul: "3. Melayani pesanan lewat WhatsApp", isi:
+    "<p>WhatsApp Business menyediakan katalog produk, label pelanggan, dan balasan cepat. Gunakan pesan konfirmasi yang jelas.</p><ul><li>Rincian pesanan dan jumlah</li><li>Total harga dan ongkir</li><li>Tanggal terima dan alamat</li><li>Cara dan batas waktu pembayaran</li></ul><p>Data pelanggan seperti nama, alamat, dan nomor HP hanya dipakai untuk keperluan pesanan. Jangan dibagikan tanpa izin pemiliknya." },
+  { judul: "4. Catatan keuangan dan stok", isi:
+    "<p>Pisahkan uang pribadi dan uang usaha sejak awal. Catat setiap pemasukan dan pengeluaran, walau di buku tulis.</p><p>Untuk stok bahan, gunakan prinsip FIFO (first in, first out): bahan yang lebih dulu masuk dipakai lebih dulu, supaya tidak ada yang kedaluwarsa di rak paling belakang. Beri tanggal beli pada setiap wadah." }
+];
+var SOAL = [
+  { q: "Harga Pokok Produksi (HPP) adalah...", o: ["Keuntungan bersih per bulan", "Harga yang dibayar pembeli", "Biaya iklan di media sosial", "Total biaya untuk membuat satu produk"], k: 3 },
+  { q: "Bahan Rp60.000, tenaga kerja Rp20.000, dan kemasan Rp10.000 menghasilkan 30 buah kue. Berapa HPP per buah?", o: ["Rp2.000", "Rp2.700", "Rp3.000", "Rp4.500"], k: 2 },
+  { q: "HPP satu kue Rp3.000. Jika ingin untung 40% dari HPP, harga jualnya...", o: ["Rp3.400", "Rp4.000", "Rp5.000", "Rp4.200"], k: 3 },
+  { q: "Foto produk yang baik untuk katalog online memiliki...", o: ["Cahaya cukup dan latar bersih", "Banyak filter warna", "Ukuran gambar sekecil mungkin", "Objek di sudut yang gelap"], k: 0 },
+  { q: "Informasi yang sebaiknya ada di deskripsi produk makanan adalah...", o: ["Slogan saja", "Ukuran atau berat, bahan utama, harga, dan cara pesan", "Nama pemilik saja", "Alamat pesaing"], k: 1 },
+  { q: "Fitur WhatsApp Business yang membantu UMKM melayani pelanggan adalah...", o: ["Pengubah suara", "Penghapus pesan otomatis", "Katalog produk dan balasan cepat", "Status khusus pribadi"], k: 2 },
+  { q: "Data pelanggan seperti nama, alamat, dan nomor HP sebaiknya...", o: ["Dibagikan ke grup agar promosi luas", "Diunggah ke media sosial", "Dipakai untuk keperluan pesanan dan tidak disebarkan tanpa izin", "Dijual ke pihak lain"], k: 2 },
+  { q: "Pencatatan keuangan usaha sederhana sebaiknya...", o: ["Mencampur uang pribadi dan uang usaha", "Memisahkan uang pribadi dan uang usaha", "Tidak perlu dicatat", "Dicatat hanya saat untung"], k: 1 },
+  { q: "Pesan konfirmasi pesanan yang baik memuat...", o: ["Hanya ucapan terima kasih", "Hanya nama produk", "Foto pemilik usaha", "Rincian pesanan, total harga, ongkir, dan cara bayar"], k: 3 },
+  { q: "Prinsip FIFO pada stok bahan berarti...", o: ["Bahan terbaru dipakai lebih dulu", "Bahan yang lebih dulu masuk dipakai lebih dulu", "Bahan dipakai secara acak", "Bahan tidak boleh disimpan"], k: 1 }
+];
+var SUS = [
+  "Saya merasa ingin sering menggunakan website ini.",
+  "Saya merasa website ini terlalu rumit tanpa perlu.",
+  "Saya merasa website ini mudah digunakan.",
+  "Saya merasa perlu bantuan orang yang paham teknis untuk dapat menggunakan website ini.",
+  "Saya merasa fitur-fitur di website ini terpadu dengan baik.",
+  "Saya merasa ada terlalu banyak ketidakkonsistenan di website ini.",
+  "Saya kira kebanyakan orang akan cepat belajar menggunakan website ini.",
+  "Saya merasa website ini sangat membingungkan untuk digunakan.",
+  "Saya merasa sangat percaya diri menggunakan website ini.",
+  "Saya perlu belajar banyak hal sebelum bisa menggunakan website ini."
+];
+/* ============================================================ */
+
+var $ = function (id) { return document.getElementById(id); };
+var rp = function (n) { return "Rp" + Math.round(n).toLocaleString("id-ID"); };
+function esc(s) { var d = document.createElement("div"); d.textContent = String(s == null ? "" : s); return d.innerHTML; }
+var store = {
+  get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+function find(id) { return PRODUK.filter(function (p) { return p.id === id; })[0]; }
+function pad(n) { return (n < 10 ? "0" : "") + n; }
+function today() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function tgl(iso) { var p = String(iso).split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : iso; }
+function copyText(txt, ok, failEl) {
+  var fail = function () { if (failEl) { var r = document.createRange(); r.selectNodeContents(failEl); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } ok("Teks sudah dipilih. Salin manual dengan tahan lama atau Ctrl+C."); };
+  try { navigator.clipboard.writeText(txt).then(function () { ok("Tersalin."); }, fail); } catch (e) { fail(); }
+}
+
+/* ---------- toko ---------- */
+var cart = store.get("dh-cart", {});
+var kategori = "Semua", kata = "";
+
+function renderStatic() {
+  $("tagline").textContent = USAHA.tagline;
+  $("facts").innerHTML = USAHA.fakta.map(function (f) { return "<li><span>" + esc(f[0]) + "</span><b>" + esc(f[1]) + "</b></li>"; }).join("");
+  $("contactList").innerHTML = USAHA.kontak.map(function (k) { return "<dt>" + esc(k[0]) + "</dt><dd>" + esc(k[1]) + "</dd>"; }).join("");
+  $("faq").innerHTML = USAHA.faq.map(function (f) { return "<details><summary>" + esc(f[0]) + "</summary>" + f[1] + "</details>"; }).join("");
+  $("waDirect").href = "https://wa.me/" + USAHA.wa;
+  $("foot").textContent = "© " + new Date().getFullYear() + " " + USAHA.nama + ". Ongkir dikonfirmasi lewat WhatsApp.";
+  var cats = ["Semua"].concat(PRODUK.map(function (p) { return p.kat; }).filter(function (v, i, a) { return a.indexOf(v) === i; }));
+  $("chips").innerHTML = cats.map(function (c) { return '<button class="chip" type="button" data-kat="' + esc(c) + '" aria-pressed="' + (c === kategori) + '">' + esc(c) + "</button>"; }).join("");
+}
+function renderGrid() {
+  var list = PRODUK.filter(function (p) {
+    return (kategori === "Semua" || p.kat === kategori) && (!kata || (p.nama + " " + p.ket).toLowerCase().indexOf(kata) > -1);
+  });
+  $("grid").innerHTML = list.length ? list.map(function (p) {
+    return '<article class="card"><div class="tile" style="--h:' + p.hue + '"><span class="letter" aria-hidden="true">' + esc(p.nama.charAt(0)) + '</span><span class="unit">' + esc(p.satuan) + "</span>" +
+      (p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + '</div><div class="info"><h3>' + esc(p.nama) + "</h3><p>" + esc(p.ket) +
+      '</p><div class="buy"><span class="price num">' + rp(p.harga) + '</span><button class="add" type="button" data-add="' + p.id + '">Tambah</button></div></div></article>';
+  }).join("") : '<div class="none">Menu tidak ditemukan. Coba kata lain atau pilih kategori Semua.</div>';
+}
+function items() { return Object.keys(cart).filter(function (id) { return cart[id] > 0 && find(id); }); }
+function totalHarga() { return items().reduce(function (s, id) { return s + cart[id] * find(id).harga; }, 0); }
+function totalQty() { return items().reduce(function (s, id) { return s + cart[id]; }, 0); }
+function metode() { return document.querySelector('input[name="metode"]:checked').value; }
+function pesan() {
+  var t = "Halo " + USAHA.nama + ", saya mau pesan:\n";
+  items().forEach(function (id) { var p = find(id); t += "- " + p.nama + " (" + p.satuan + ") x" + cart[id] + " = " + rp(cart[id] * p.harga) + "\n"; });
+  t += "\nTotal: " + rp(totalHarga()) + " (belum termasuk ongkir)\nNama: " + ($("nama").value.trim() || "-");
+  t += "\nCara terima: " + (metode() === "Antar" ? "Diantar" : "Ambil sendiri");
+  if (metode() === "Antar") t += "\nAlamat: " + ($("alamat").value.trim() || "-");
+  t += "\nTanggal diterima: " + ($("tanggal").value ? tgl($("tanggal").value) : "-");
+  if ($("catatan").value.trim()) t += "\nCatatan: " + $("catatan").value.trim();
+  return t;
+}
+function renderCart() {
+  var ids = items(), sum = totalHarga();
+  $("cartCount").textContent = totalQty();
+  $("total").textContent = rp(sum);
+  $("lines").innerHTML = ids.length ? ids.map(function (id) {
+    var p = find(id);
+    return '<div class="line"><div><b>' + esc(p.nama) + "</b><br><small>" + esc(p.satuan) + " · " + rp(p.harga) + '</small></div><b class="num">' + rp(cart[id] * p.harga) + '</b><div class="qty"><button type="button" data-dec="' + id + '" aria-label="Kurangi">&minus;</button><span class="num">' + cart[id] + '</span><button type="button" data-inc="' + id + '" aria-label="Tambah">+</button></div></div>';
+  }).join("") : '<div class="empty">Keranjang masih kosong. Pilih menu dulu, lalu kembali ke sini.</div>';
+  $("form").hidden = !ids.length;
+  $("alamatWrap").hidden = metode() !== "Antar";
+  $("preview").textContent = ids.length ? pesan() : "";
+  var why = "";
+  if (ids.length) {
+    if (sum < USAHA.minOrder) why = "Minimal order " + rp(USAHA.minOrder) + ".";
+    else if (!$("nama").value.trim()) why = "Isi nama pemesan.";
+    else if (metode() === "Antar" && !$("alamat").value.trim()) why = "Isi alamat pengantaran.";
+    else if (!$("tanggal").value) why = "Pilih tanggal diterima.";
+  }
+  var ok = ids.length > 0 && !why, a = $("waOrder");
+  a.setAttribute("aria-disabled", ok ? "false" : "true");
+  a.href = ok ? "https://wa.me/" + USAHA.wa + "?text=" + encodeURIComponent(pesan()) : "#";
+  $("hint").textContent = !ids.length ? "" : (ok ? "WhatsApp akan terbuka dengan pesan terisi. Tekan kirim di sana untuk menyelesaikan." : why);
+}
+function setQty(id, n) { if (n <= 0) delete cart[id]; else cart[id] = n; store.set("dh-cart", cart); renderCart(); }
+function openCart() { $("drawerRoot").hidden = false; $("closeCart").focus(); }
+function closeCart() { $("drawerRoot").hidden = true; $("openCart").focus(); }
+
+/* ---------- modul belajar ---------- */
+var selesai = store.get("dh-modul", []);
+function renderModul() {
+  $("modules").innerHTML = MODUL.map(function (m, i) {
+    var done = selesai.indexOf(i) > -1;
+    var calc = m.calc ? '<div class="calc"><div><label class="f" for="hBahan">Biaya bahan (Rp)</label><input type="number" id="hBahan" min="0" value="60000"></div><div><label class="f" for="hTenaga">Tenaga kerja (Rp)</label><input type="number" id="hTenaga" min="0" value="20000"></div><div><label class="f" for="hLain">Kemasan dan lain-lain (Rp)</label><input type="number" id="hLain" min="0" value="10000"></div><div><label class="f" for="hJumlah">Jumlah produk jadi</label><input type="number" id="hJumlah" min="1" value="30"></div><div><label class="f" for="hMargin">Margin untung (%)</label><input type="number" id="hMargin" min="0" value="40"></div></div><div class="calc-out"><div class="out"><small>HPP per buah</small><b class="num" id="oHpp">-</b></div><div class="out"><small>Harga jual per buah</small><b class="num" id="oJual">-</b></div></div>' : "";
+    return '<details data-m="' + i + '"><summary>' + esc(m.judul) + (done ? ' <span class="pill good">Selesai</span>' : "") + "</summary>" + m.isi + calc +
+      '<button class="btn small mod-done" type="button" data-done="' + i + '">' + (done ? "Tandai belum selesai" : "Tandai selesai dibaca") + "</button></details>";
+  }).join("");
+  $("meterBar").style.width = (selesai.length / MODUL.length * 100) + "%";
+  $("meterTxt").textContent = selesai.length + " dari " + MODUL.length + " modul";
+  hitungHpp();
+}
+function hitungHpp() {
+  if (!$("hBahan")) return;
+  var v = function (id) { return Math.max(0, parseFloat($(id).value) || 0); };
+  var jml = Math.max(1, v("hJumlah")), hpp = (v("hBahan") + v("hTenaga") + v("hLain")) / jml;
+  $("oHpp").textContent = rp(hpp);
+  $("oJual").textContent = rp(hpp * (1 + v("hMargin") / 100));
+}
+
+/* ---------- tes, SUS, simpan hasil ---------- */
+var mode = "pre";
+var MODES = { pre: "Pre-test", post: "Post-test", sus: "Kuesioner SUS" };
+var dbRef = null, remote = [], local = store.get("dh-hasil", []);
+
+function renderTabs() {
+  $("tabs").innerHTML = Object.keys(MODES).map(function (k) { return '<button class="chip" type="button" data-mode="' + k + '" aria-pressed="' + (k === mode) + '">' + MODES[k] + "</button>"; }).join("");
+}
+function renderTest() {
+  var h = "";
+  if (mode === "sus") {
+    h += '<p class="muted">Beri nilai dari 1 (sangat tidak setuju) sampai 5 (sangat setuju) untuk website Dapur Haya ini.</p>';
+    SUS.forEach(function (s, i) {
+      h += '<div class="q"><p>' + (i + 1) + ". " + esc(s) + '</p><div class="scale" role="radiogroup">';
+      for (var n = 1; n <= 5; n++) h += '<label><input type="radio" name="q' + i + '" value="' + n + '"><span>' + n + "</span></label>";
+      h += '</div><div class="ends"><span>Sangat tidak setuju</span><span>Sangat setuju</span></div></div>';
+    });
+  } else {
+    h += '<p class="muted">' + (mode === "pre" ? "Kerjakan sebelum membaca modul." : "Kerjakan setelah membaca semua modul.") + " Pilih satu jawaban untuk tiap soal.</p>";
+    SOAL.forEach(function (s, i) {
+      h += '<div class="q"><p>' + (i + 1) + ". " + esc(s.q) + "</p>";
+      s.o.forEach(function (o, j) { h += '<label class="opt"><input type="radio" name="q' + i + '" value="' + j + '"><span>' + esc(o) + "</span></label>"; });
+      h += "</div>";
+    });
+  }
+  $("testBody").innerHTML = h;
+  $("testMsg").textContent = "";
+  $("result").hidden = true;
+}
+function susSkor(a) {
+  var tot = 0;
+  a.forEach(function (x, i) { tot += (i % 2 === 0) ? (x - 1) : (5 - x); });
+  return tot * 2.5;
+}
+function susKat(s) {
+  if (s >= 80) return ["Sangat baik", "good"];
+  if (s >= 68) return ["Baik (di atas rata-rata)", "good"];
+  if (s >= 51) return ["Cukup (di bawah rata-rata)", "warn"];
+  return ["Kurang", "bad"];
+}
+function encode(rec) { return "DH1." + btoa(unescape(encodeURIComponent(JSON.stringify(rec)))); }
+function decode(s) {
+  try {
+    var o = JSON.parse(decodeURIComponent(escape(atob(s.replace(/^DH1\./, "")))));
+    if (o && o.id && o.jenis && typeof o.skor === "number" && MODES[o.jenis]) {
+      return { id: String(o.id).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40), waktu: String(o.waktu || ""), nama: String(o.nama || "").slice(0, 80), peran: String(o.peran || "").slice(0, 40), jenis: o.jenis, skor: o.skor, jawaban: String(o.jawaban || "").slice(0, 40) };
+    }
+  } catch (e) {}
+  return null;
+}
+function merged() {
+  var map = {};
+  local.forEach(function (r) { map[r.id] = r; });
+  remote.forEach(function (r) { map[r.id] = r; });
+  return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return String(b.waktu).localeCompare(String(a.waktu)); });
+}
+function saveRecord(rec, done) {
+  local.push(rec); store.set("dh-hasil", local);
+  if (dbRef) {
+    dbRef.collection("hasil").doc(rec.id).set(rec).then(function () { done(true); }, function () { done(false); });
+  } else done(false);
+  renderRekap();
+}
+
+$("testForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var nama = $("rNama").value.trim(), msg = $("testMsg");
+  if (!nama) { msg.textContent = "Isi nama atau kode responden dulu."; $("rNama").focus(); return; }
+  var n = mode === "sus" ? SUS.length : SOAL.length, ans = [];
+  for (var i = 0; i < n; i++) {
+    var c = document.querySelector('input[name="q' + i + '"]:checked');
+    if (!c) { msg.textContent = "Soal nomor " + (i + 1) + " belum dijawab."; return; }
+    ans.push(parseInt(c.value, 10));
+  }
+  var skor, ket = "";
+  if (mode === "sus") { skor = susSkor(ans); var k = susKat(skor); ket = '<span class="pill ' + k[1] + '">' + k[0] + "</span>"; }
+  else { var benar = ans.filter(function (a, i) { return a === SOAL[i].k; }).length; skor = benar * 100 / n; ket = benar + " dari " + n + " benar"; }
+  var d = new Date();
+  var rec = { id: "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), waktu: d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()),
+    nama: nama, peran: $("rPeran").value, jenis: mode, skor: Math.round(skor * 10) / 10,
+    jawaban: mode === "sus" ? ans.join("") : ans.map(function (a) { return "ABCD".charAt(a); }).join("") };
+  var kode = encode(rec), box = $("result");
+  box.hidden = false;
+  box.innerHTML = '<p class="muted">' + esc(MODES[mode]) + " · " + esc(nama) + '</p><p class="big num">' + rec.skor + '</p><p style="margin-top:6px">' + ket + '</p><p class="muted" style="margin-top:12px" id="saveState">Menyimpan...</p>' +
+    '<p style="margin-top:12px;font-weight:600">Kode hasil</p><div class="code" id="kode">' + esc(kode) + '</div><div class="row-actions"><button class="btn small" id="copyKode" type="button">Salin kode</button></div>' +
+    '<p class="muted" style="font-size:.88rem">Jika peneliti meminta, kirim kode ini lewat WhatsApp atau formulir agar jawabanmu masuk ke rekap.</p>';
+  box.scrollIntoView({ block: "nearest" });
+  $("copyKode").addEventListener("click", function () { copyText(kode, function (t) { $("copyKode").textContent = t; }, $("kode")); });
+  saveRecord(rec, function (shared) { $("saveState").textContent = shared ? "Tersimpan di data bersama dan di perangkat ini." : "Tersimpan di perangkat ini. Kirim kode hasil ke peneliti."; });
+});
+
+/* ---------- rekap ---------- */
+function keyOf(r) { return r.nama.trim().toLowerCase(); }
+function csvOf(rows) {
+  var q = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
+  return "id,waktu,nama,peran,jenis,skor,jawaban\n" + rows.map(function (r) { return [r.id, r.waktu, r.nama, r.peran, r.jenis, r.skor, r.jawaban].map(q).join(","); }).join("\n");
+}
+function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : null; }
+function f1(x) { return x == null ? "-" : (Math.round(x * 10) / 10).toLocaleString("id-ID"); }
+function renderRekap() {
+  var rows = merged();
+  var latest = function (jenis) { var m = {}; rows.filter(function (r) { return r.jenis === jenis; }).forEach(function (r) { if (!m[keyOf(r)]) m[keyOf(r)] = r; }); return m; };
+  var pre = latest("pre"), post = latest("post"), sus = latest("sus");
+  var preV = Object.keys(pre).map(function (k) { return pre[k].skor; }), postV = Object.keys(post).map(function (k) { return post[k].skor; }), susV = Object.keys(sus).map(function (k) { return sus[k].skor; });
+  var gains = [];
+  Object.keys(pre).forEach(function (k) { if (post[k] && pre[k].skor < 100) gains.push((post[k].skor - pre[k].skor) / (100 - pre[k].skor)); });
+  var ng = mean(gains), ngKat = ng == null ? "" : (ng >= 0.7 ? ["Tinggi", "good"] : ng >= 0.3 ? ["Sedang", "warn"] : ["Rendah", "bad"]);
+  var sm = mean(susV), sk = sm == null ? "" : susKat(sm);
+  var tile = function (judul, nilai, sub) { return '<div class="stat"><small>' + judul + "</small><b class=\"num\">" + nilai + "</b><small>" + sub + "</small></div>"; };
+  $("stats").innerHTML =
+    tile("Rata-rata pre-test", f1(mean(preV)), "n = " + preV.length) +
+    tile("Rata-rata post-test", f1(mean(postV)), "n = " + postV.length) +
+    tile("N-Gain rata-rata", ng == null ? "-" : (Math.round(ng * 100) / 100).toLocaleString("id-ID"), ng == null ? "Perlu responden dengan pre dan post" : '<span class="pill ' + ngKat[1] + '">' + ngKat[0] + "</span> · n = " + gains.length) +
+    tile("Skor SUS rata-rata", f1(sm), sm == null ? "n = 0" : '<span class="pill ' + sk[1] + '">' + sk[0] + "</span> · n = " + susV.length);
+  $("rows").innerHTML = rows.length ? rows.slice(0, 200).map(function (r) {
+    return "<tr><td class=\"num\">" + esc(r.waktu) + "</td><td>" + esc(r.nama) + "</td><td>" + esc(r.peran) + "</td><td>" + esc(MODES[r.jenis] || r.jenis) + '</td><td class="num">' + esc(r.skor) + "</td></tr>";
+  }).join("") : '<tr><td colspan="5" class="muted" style="white-space:normal;padding:18px">Belum ada jawaban. Kerjakan pre-test, post-test, atau SUS di atas, atau impor kode hasil dari responden.</td></tr>';
+  var pill = $("srcPill");
+  pill.className = "pill " + (dbRef ? "good" : "warn");
+  pill.textContent = dbRef ? "Data bersama aktif" : "Hanya data di perangkat ini";
+}
+
+/* ---------- event ---------- */
+document.addEventListener("click", function (e) {
+  var t = e.target.closest("button, a");
+  if (!t) return;
+  if (t.dataset.kat) { kategori = t.dataset.kat; renderStatic(); renderGrid(); }
+  else if (t.dataset.add) { setQty(t.dataset.add, (cart[t.dataset.add] || 0) + 1); t.textContent = "Ditambah"; setTimeout(function () { t.textContent = "Tambah"; }, 900); }
+  else if (t.dataset.inc) setQty(t.dataset.inc, cart[t.dataset.inc] + 1);
+  else if (t.dataset.dec) setQty(t.dataset.dec, cart[t.dataset.dec] - 1);
+  else if (t.dataset.mode) { mode = t.dataset.mode; renderTabs(); renderTest(); }
+  else if (t.dataset.done) {
+    var i = parseInt(t.dataset.done, 10), at = selesai.indexOf(i);
+    if (at > -1) selesai.splice(at, 1); else selesai.push(i);
+    store.set("dh-modul", selesai);
+    var open = Array.prototype.map.call(document.querySelectorAll("#modules details"), function (d) { return d.open; });
+    renderModul();
+    Array.prototype.forEach.call(document.querySelectorAll("#modules details"), function (d, j) { d.open = open[j]; });
+  }
+  else if (t.id === "openCart") openCart();
+  else if (t.id === "closeCart") closeCart();
+  else if (t.id === "waOrder" && t.getAttribute("aria-disabled") === "true") e.preventDefault();
+  else if (t.id === "copyOrder") {
+    if (!items().length) { $("hint").textContent = "Keranjang masih kosong."; return; }
+    copyText(pesan(), function (m) { $("hint").textContent = m; }, $("preview"));
+  }
+  else if (t.id === "copyCsv") { var rr = merged(); if (!rr.length) { $("rekapMsg").textContent = "Belum ada data."; return; } copyText(csvOf(rr), function (m) { $("rekapMsg").textContent = m; }, null); }
+  else if (t.id === "dlCsv") {
+    var rr2 = merged();
+    if (!rr2.length) { $("rekapMsg").textContent = "Belum ada data."; return; }
+    if (!window.claude || !window.claude.use) { $("rekapMsg").textContent = "Unduhan tidak tersedia di sini. Pakai Salin CSV."; return; }
+    window.claude.use("downloads").then(function (dl) {
+      if (!dl) { $("rekapMsg").textContent = "Unduhan tidak tersedia di sini. Pakai Salin CSV."; return; }
+      return dl.save({ filename: "hasil-penelitian-dapur-haya.csv", data: csvOf(rr2) }).then(function () { $("rekapMsg").textContent = "File CSV disimpan."; }, function (er) { $("rekapMsg").textContent = er && er.code === "declined" ? "Unduhan dibatalkan." : "Unduhan gagal. Pakai Salin CSV."; });
+    });
+  }
+  else if (t.id === "wipe") {
+    if (t.dataset.arm !== "1") { t.dataset.arm = "1"; t.textContent = "Yakin hapus? Tekan lagi"; setTimeout(function () { t.dataset.arm = ""; t.textContent = "Hapus data di perangkat ini"; }, 4000); return; }
+    local = []; store.set("dh-hasil", local); t.dataset.arm = ""; t.textContent = "Hapus data di perangkat ini"; $("rekapMsg").textContent = "Data di perangkat ini dihapus. Data bersama tidak ikut terhapus."; renderRekap();
+  }
+  else if (t.id === "doImpor") {
+    var added = 0, bad = 0, ids = {};
+    local.forEach(function (r) { ids[r.id] = 1; });
+    $("impor").value.split(/\s+/).filter(Boolean).forEach(function (c) { var r = decode(c); if (!r) bad++; else if (!ids[r.id]) { local.push(r); ids[r.id] = 1; added++; } });
+    store.set("dh-hasil", local); renderRekap();
+    $("rekapMsg").textContent = added + " kode diimpor" + (bad ? ", " + bad + " kode tidak valid" : "") + ".";
+    if (added) $("impor").value = "";
+  }
+});
+$("scrim").addEventListener("click", closeCart);
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("drawerRoot").hidden) closeCart(); });
+$("cari").addEventListener("input", function (e) { kata = e.target.value.trim().toLowerCase(); renderGrid(); });
+["nama", "alamat", "catatan", "tanggal"].forEach(function (id) { $(id).addEventListener("input", renderCart); });
+Array.prototype.forEach.call(document.querySelectorAll('input[name="metode"]'), function (r) { r.addEventListener("change", renderCart); });
+document.addEventListener("input", function (e) { if (e.target.id && e.target.id.charAt(0) === "h" && $("oHpp")) hitungHpp(); });
+
+/* ---------- mulai ---------- */
+$("tanggal").min = today();
+renderStatic(); renderGrid(); renderCart(); renderModul(); renderTabs(); renderTest(); renderRekap();
+
+/* data bersama (opsional): menyala hanya jika tampilan ini mendapat izin */
+if (window.claude && window.claude.use) {
+  window.claude.use("db").then(function (db) {
+    if (!db) return;
+    dbRef = db;
+    db.collection("hasil").orderBy("waktu", "desc").limit(500).onSnapshot(function (snap) {
+      remote = snap.docs.map(function (d) { return d.data(); }).filter(function (r) { return r && r.id && MODES[r.jenis] && typeof r.skor === "number" && typeof r.nama === "string"; });
+      renderRekap();
+    }, function () { renderRekap(); });
+    renderRekap();
+  }, function () {});
+}
+</script>
+
+</body>
+</html>
