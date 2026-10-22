@@ -362,7 +362,7 @@ var USAHA = {
   fakta: [["Pesan paling lambat", "H-1 pukul 15.00"], ["Jam layanan", "08.00 - 20.00"], ["Minimal order", "Rp25.000"]],
   kontak: [["WhatsApp", "+6285728180418"], ["Alamat", "Jl. Contoh No. 5, Kota Anda"], ["Pembayaran", "Transfer bank atau e-wallet"]],
   faq: [
-    ["Bagaimana cara memesan?", "<p>Pilih menu, tekan Tambah, buka Keranjang, isi nama dan tanggal terima, lalu tekan Pesan lewat WhatsApp. Pesan terisi otomatis dan tinggal dikirim.</p>"],
+    ["Bagaimana cara memesan?", "<p>Pilih menu, tekan Tambah, buka Keranjang, isi nama dan tanggal terima, lalu tekan Pesan lewat WhatsApp. WhatsApp akan terbuka dengan pesan terisi otomatis; tekan Kirim di WhatsApp untuk menyelesaikan pesanan.</p>"],
     ["Kapan pesanan saya diterima?", "<p>Pesanan dibuat sesuai tanggal yang kamu pilih. Untuk menu kue dan nasi box, pesan paling lambat sehari sebelumnya.</p>"],
     ["Berapa ongkos kirim dan bagaimana pembayaran?", "<p>Ongkir mengikuti jarak dan dikonfirmasi lewat WhatsApp. Pembayaran lewat transfer bank atau e-wallet setelah total disepakati.</p>"]
   ]
@@ -436,9 +436,9 @@ var kategori = "Semua", kata = "";
 function renderStatic() {
   $("tagline").textContent = USAHA.tagline;
   $("facts").innerHTML = USAHA.fakta.map(function (f) { return "<li><span>" + esc(f[0]) + "</span><b>" + esc(f[1]) + "</b></li>"; }).join("");
-  $("contactList").innerHTML = USAHA.kontak.map(function (k) { return "<dt>" + esc(k[0]) + "</dt><dd>" + esc(k[1]) + "</dd>"; }).join("");
+  $("contactList").innerHTML = USAHA.kontak.map(function (k) { var value = k[0] === "WhatsApp" ? "+" + USAHA.wa : k[1]; return "<dt>" + esc(k[0]) + "</dt><dd>" + esc(value) + "</dd>"; }).join("");
   $("faq").innerHTML = USAHA.faq.map(function (f) { return "<details><summary>" + esc(f[0]) + "</summary>" + f[1] + "</details>"; }).join("");
-  $("waDirect").href = "https://wa.me/6285728180418" + USAHA.wa;
+  $("waDirect").href = "https://wa.me/" + USAHA.wa + "?text=" + encodeURIComponent("Halo " + USAHA.nama + ", saya ingin bertanya tentang menu dan pemesanan.");
   $("foot").textContent = "© " + new Date().getFullYear() + " " + USAHA.nama + ". Ongkir dikonfirmasi lewat WhatsApp.";
   var cats = ["Semua"].concat(PRODUK.map(function (p) { return p.kat; }).filter(function (v, i, a) { return a.indexOf(v) === i; }));
   $("chips").innerHTML = cats.map(function (c) { return '<button class="chip" type="button" data-kat="' + esc(c) + '" aria-pressed="' + (c === kategori) + '">' + esc(c) + "</button>"; }).join("");
@@ -487,7 +487,7 @@ function renderCart() {
   }
   var ok = ids.length > 0 && !why, a = $("waOrder");
   a.setAttribute("aria-disabled", ok ? "false" : "true");
-  a.href = ok ? "https://wa.me/6285728180418" + USAHA.wa + "?text=" + encodeURIComponent(pesan()) : "#";
+  a.href = ok ? "https://wa.me/" + USAHA.wa + "?text=" + encodeURIComponent(pesan()) : "#";
   $("hint").textContent = !ids.length ? "" : (ok ? "WhatsApp akan terbuka dengan pesan terisi. Tekan kirim di sana untuk menyelesaikan." : why);
 }
 function setQty(id, n) { if (n <= 0) delete cart[id]; else cart[id] = n; store.set("dh-cart", cart); renderCart(); }
